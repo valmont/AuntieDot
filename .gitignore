@@ -1,47 +1,33 @@
-# Windows image file caches
-Thumbs.db
-ehthumbs.db
-
-# Folder config file
-Desktop.ini
-
-# Recycle Bin used on file shares
-$RECYCLE.BIN/
-
-# Windows Installer files
-*.cab
-*.msi
-*.msm
-*.msp
-
-# Windows shortcuts
-*.lnk
-
-# =========================
-# Operating System Files
-# =========================
-
-# OSX
-# =========================
-
-.DS_Store
-.AppleDouble
-.LSOverride
-
-# Thumbnails
-._*
-
-# Files that might appear in the root of a volume
-.DocumentRevisions-V100
-.fseventsd
-.Spotlight-V100
-.TemporaryItems
-.Trashes
-.VolumeIcon.icns
-
-# Directories potentially created on remote AFP share
-.AppleDB
-.AppleDesktop
-Network Trash Folder
-Temporary Items
-.apdisk
+[Oo]bj/
+[Bb]in/
+*.user
+*.bundle
+/TestResults
+*.vspscc
+*.vssscc
+build
+build/*
+*.suo
+*.cache
+*.docstates
+_ReSharper.*
+*.csproj.user
+*[Rr]e[Ss]harper.user
+_ReSharper.*/
+packages/*
+Kudu.Services.Web/App_Data/*
+artifacts/*
+msbuild.log
+PublishProfiles/
+*.psess
+Public/
+Public/*
+App_Data/
+*.cmd
+PostHope.Web.UI/Assets/javascripts/deploy/*.js
+.vs/config/applicationhost.config
+.vs/config/applicationhost.config
+.vs/config/applicationhost.config
+.vs/config/applicationhost.config
+.vs/config/applicationhost.config
+.vs/config/applicationhost.config
