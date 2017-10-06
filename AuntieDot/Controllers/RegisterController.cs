@@ -64,14 +64,14 @@ namespace AuntieDot.Controllers {
             //Prepare the redirect URL. This is case-sensitive and must match a 
             //redirection URL in your Shopify app's settings.
             var redirectUrl = "https://auntiedot.apphb.com/shopify/authresult";
-            
+
             //Build the authorization URL
             var authUrl = AuthorizationService.BuildAuthorizationUrl(
-                permissions, 
+                permissions,
                 shopUrl,
-                ApplicationEngine.ShopifyApiKey, 
+                ApplicationEngine.ShopifyApiKey,
                 redirectUrl);
-            
+
             //Build the authorization URL and send the user to it
             return Redirect(authUrl.ToString());
         }
