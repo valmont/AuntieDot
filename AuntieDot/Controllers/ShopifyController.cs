@@ -56,6 +56,24 @@ namespace AuntieDot.Controllers {
                               string.Join(", ", update.Errors);
                 throw new Exception(message);
             }
+            //Create the AppUninstalled webhook
+            var service = new WebhookService(user.MyShopifyDomain, user.ShopifyAccessToken
+            );
+            var hook = new Webhook {
+                Address = "https://auntiedot.apphb.com/webhooks/appuninstalled?userId=" + user.Id,
+                Topic = "app/uninstalled"
+            };
+            try {
+                hook = await service.CreateAsync(hook);
+            }
+            catch (ShopifyException e) when (e.Message.ToLower().Contains("for this topic has already been taken")) {
+                //Ignore error, webhook has already been created and is still valid.
+            }
+            catch (ShopifyException e) {
+                // TODO: Log or handle exception in whatever way you see fit.
+                throw e;
+            }
+
             //Delete the shop's status from cache to force a refresh.
             CacheEngine.ResetShopStatus(user.Id, HttpContext);
             return RedirectToAction("Charge", "Register");
@@ -87,7 +105,7 @@ namespace AuntieDot.Controllers {
             user.ShopifyChargeId = charge_id;
             user.BillingOn = charge.BillingOn;
             var update = await usermanager.UpdateAsync(user);
-            
+
             if (!update.Succeeded) {
                 // TODO: Log or handle exception in whatever way you see fit.
                 var message = "Couldn't save a user's activated charge id. Reason: " +

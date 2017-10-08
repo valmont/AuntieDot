@@ -75,5 +75,30 @@ namespace AuntieDot.Controllers {
             //Build the authorization URL and send the user to it
             return Redirect(authUrl.ToString());
         }
+
+        [Authorize]
+        public async Task<ActionResult> Charge() {
+            //Grab the user object
+            var owinContext = HttpContext.GetOwinContext();
+            var usermanager = owinContext.GetUserManager<ApplicationUserManager>();
+            var user = await usermanager.FindByNameAsync(User.Identity.Name);
+            if (user == null) {
+                return new HttpUnauthorizedResult();
+            }
+            var domain = user.MyShopifyDomain;
+            var token = user.ShopifyAccessToken;
+            //Build a test Shopify charge with a free, 14-day trial
+            var charge = new RecurringCharge {
+                Name = "Pro Plan",
+                Price = 29.95m,
+                TrialDays = 14,
+                Test = true,
+                ReturnUrl = "https://auntiedot.apphb.com/shopify/chargeresult"
+            };
+            //Create the charge
+            charge = await new RecurringChargeService(domain, token).CreateAsync(charge);
+            //Redirect the user to accept the charge
+            return Redirect(charge.ConfirmationUrl);
+        }
     }
 }
