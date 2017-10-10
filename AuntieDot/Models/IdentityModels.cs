@@ -23,7 +23,7 @@ namespace AuntieDot.Models {
 
     public class ApplicationDbContext : IdentityDbContext<ApplicationUser> {
         public ApplicationDbContext()
-            : base("SQLSERVER_CONNECTION_STRING", false) {
+            : base("DefaultConnection", false) {
         }
 
         public static ApplicationDbContext Create() {
