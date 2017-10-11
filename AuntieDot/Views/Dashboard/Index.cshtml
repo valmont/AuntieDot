@@ -1,7 +1,14 @@
 ﻿
+@model AuntieDot.Models.ApplicationUser
 @{
     ViewBag.Title = "Index";
+    
 }
 
 <h2>Dashboard</h2>
 
+<ul>
+    <li>Store: @Model.MyShopifyDomain</li>
+    <li>Access Token: @Model.ShopifyAccessToken</li>
+    <li>Next bill date: @Model.BillingOn</li>
+</ul>
