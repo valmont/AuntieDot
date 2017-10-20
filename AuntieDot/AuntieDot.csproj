@@ -289,11 +289,16 @@
     <Compile Include="Migrations\201710120243246_Initial.Designer.cs">
       <DependentUpon>201710120243246_Initial.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201710120256527_Order Model.cs" />
+    <Compile Include="Migrations\201710120256527_Order Model.Designer.cs">
+      <DependentUpon>201710120256527_Order Model.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\AccountViewModels.cs" />
     <Compile Include="Models\CachedShopStatus.cs" />
     <Compile Include="Models\IdentityModels.cs" />
     <Compile Include="Models\ManageViewModels.cs" />
+    <Compile Include="Models\Order.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Startup.cs" />
   </ItemGroup>
@@ -359,6 +364,7 @@
     <Content Include="Views\Dashboard\Index.cshtml" />
     <Content Include="Views\Register\Index.cshtml" />
     <Content Include="Views\Register\Connect.cshtml" />
+    <Content Include="Views\Dashboard\Order.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
@@ -382,6 +388,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201710120243246_Initial.resx">
       <DependentUpon>201710120243246_Initial.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201710120256527_Order Model.resx">
+      <DependentUpon>201710120256527_Order Model.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>

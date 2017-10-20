@@ -112,6 +112,26 @@ namespace AuntieDot.Controllers {
                               string.Join(", ", update.Errors);
                 throw new Exception(message);
             }
+
+            //Create an OrderCreated and OrderUpdated webhook    
+            var hookService = new WebhookService(user.MyShopifyDomain, user.ShopifyAccessToken);
+            var topics = new [] {
+                "orders/create",
+                "orders/updated"
+            };
+            //Topic
+            foreach (var topic in topics) {
+                var hook = new Webhook { Address = $"https://auntiedot.apphb.com/webhooks/{topic}?userId={user.Id}", Topic = topic };
+                try { await hookService.CreateAsync(hook); }
+                catch (ShopifyException e) when (e.Message.ToLower().Contains("for this topic has already been taken")) {
+                    //Ignore error, webhook has already been created and is still valid.        
+                }        catch (ShopifyException e)        {            
+                    // TODO: Log or handle exception in whatever way you see fit.
+                    throw e;
+                }
+            }
+
+
             //Delete the shop's status from cache to force a refresh.
             CacheEngine.ResetShopStatus(user.Id, HttpContext);
             //User's subscription charge has been activated and they can now use the app.

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Identity;
@@ -12,6 +13,7 @@ namespace AuntieDot.Models {
         public string MyShopifyDomain { get; set; }
         public long? ShopifyChargeId { get; set; }
         public DateTimeOffset? BillingOn { get; set; }
+        public ICollection<Order> Orders { get; set; } = new List<Order>();
 
         public async Task<ClaimsIdentity> GenerateUserIdentityAsync(UserManager<ApplicationUser> manager) {
             // Note the authenticationType must match the one defined in CookieAuthenticationOptions.AuthenticationType
