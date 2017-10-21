@@ -1,10 +1,15 @@
-﻿using System.Data.Entity;
+﻿using System;
+using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using AuntieDot.Attributes;
 using AuntieDot.Models;
 using Microsoft.AspNet.Identity;
+using ShopifySharp;
+using ShopifySharp.Filters;
+using Order = ShopifySharp.Order;
 
 namespace AuntieDot.Controllers {
     [RequireSubscription]
@@ -15,6 +20,76 @@ namespace AuntieDot.Controllers {
             _database = new ApplicationDbContext();
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> Import() {
+            var shop = CacheEngine.GetShopStatus(User.Identity.GetUserId(), HttpContext);
+            //Get a total count of open orders on the shop    
+            var service = new OrderService(shop.MyShopifyDomain, shop.ShopifyAccessToken);
+            var count = await service.CountAsync(new OrderFilter {
+                Status = "Open"
+            });
+            var page = 0;
+            var importedOrders = new List<Order>();
+            while (page <= count / 250) {
+                page += 1;
+                //To reduce bandwidth/time, only return the fields that we'll be using.        
+                //These field names MUST match the Shopify API, NOT the ones in ShopifySharp.        
+                var filterOptions = new OrderFilter {
+                    Limit = 250,
+                    Status = "Open",
+                    Fields = "id,created_at,name,line_items,customer",
+                    Page = page
+                };
+                importedOrders.AddRange(await service.ListAsync(filterOptions));
+            }
+            //Get a reference to the user's orders.    
+            var orderRef = _database.GetUserOrdersReference(User.Identity.GetUserId());
+            //Get a list of all of the user's orders in this list that already exist in the datab ase    
+            var ids = importedOrders.Select(i => i.Id ?? 0);
+            var existing = await orderRef.Query()
+                                         .Where(o => ids.Contains(o.ShopifyId))
+                                         .Select(o => o.ShopifyId)
+                                         .ToListAsync();
+            //Use the list of existing order ids to determine which ones need to be added    
+            importedOrders = importedOrders.Where(s => existing.Contains(s.Id.Value) == false).ToList();
+            //Convert the final list of orders into a database order and save them    
+            foreach (var order in importedOrders) {
+                orderRef.CurrentValue.Add(order.ToDatabaseOrder());
+            }
+
+            await _database.SaveChangesAsync();
+
+            return RedirectToAction("Index");
+        }
+        public async Task<ActionResult> Order(int id) {
+            //Get a reference to the user's orders, then find the requested order's ShopifyId.    
+            var orderRef = _database.GetUserOrdersReference(User.Identity.GetUserId());
+            var shopifyId = await orderRef.Query().Where(o => o.Id == id).Select(o => o.ShopifyId ).FirstAsync();
+            //Get their cached shop data so we can use their access tokens without making another    
+            //query to the database.
+            var shop = CacheEngine.GetShopStatus(User.Identity.GetUserId(), HttpContext);
+            //Pull in the full Shopify order, which includes the Shopify customer.    
+            var orderService = new OrderService(shop.MyShopifyDomain, shop.ShopifyAccessToken);
+            var fullOrder = await orderService.GetAsync(shopifyId);
+            //Pass the database order id to the ViewBag    ViewBag.OrderId = id;
+            return View(fullOrder);
+        }
+        [HttpPost, ValidateAntiForgeryToken]
+        public async Task<ActionResult> SetStatus(int id, string status = "closed") {
+            var shop = CacheEngine.GetShopStatus(User.Identity.GetUserId(), HttpContext);
+            var orderService = new OrderService(shop.MyShopifyDomain, shop.ShopifyAccessToken);
+            //Get a reference to the user's orders, then find the requested order's id.    
+            var orderRef = _database.GetUserOrdersReference(User.Identity.GetUserId());
+            var shopifyId = await orderRef.Query().Where(o => o.Id == id).Select(o => o.ShopifyId ).FirstAsync();
+            if (status.Equals("open", StringComparison.OrdinalIgnoreCase)) {
+                await orderService.OpenAsync(shopifyId);
+            }
+            else {
+                await orderService.CloseAsync(shopifyId);
+            }
+            return RedirectToAction("Order", new { id });
+        }
         // GET: Dashboard
         public async Task<ActionResult> Index(int page = 1) {
             var pageSize = 50;
@@ -32,7 +107,8 @@ namespace AuntieDot.Controllers {
             //Page must be at least 1    
             page = page < 1 ? 1 : page;
             //Get the current page of orders    
-            var orders = await query.OrderByDescending(o => o.DateCreated).Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
+            var orders = await query.OrderByDescending(o => o.DateCreated).Skip((page - 1) * pageSize).Take(pageSize)
+                .ToListAsync();
             return View(orders);
         }
 
