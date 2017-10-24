@@ -48,24 +48,62 @@ namespace AuntieDot.Controllers {
             //Get a list of all of the user's orders in this list that already exist in the datab ase    
             var ids = importedOrders.Select(i => i.Id ?? 0);
             var existing = await orderRef.Query()
-                                         .Where(o => ids.Contains(o.ShopifyId))
-                                         .Select(o => o.ShopifyId)
-                                         .ToListAsync();
+                .Where(o => ids.Contains(o.ShopifyId))
+                .Select(o => o.ShopifyId)
+                .ToListAsync();
             //Use the list of existing order ids to determine which ones need to be added    
             importedOrders = importedOrders.Where(s => existing.Contains(s.Id.Value) == false).ToList();
             //Convert the final list of orders into a database order and save them    
-            foreach (var order in importedOrders) {
-                orderRef.CurrentValue.Add(order.ToDatabaseOrder());
-            }
+            foreach (var order in importedOrders) orderRef.CurrentValue.Add(order.ToDatabaseOrder());
 
             await _database.SaveChangesAsync();
 
             return RedirectToAction("Index");
         }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> Fulfill(long id, IEnumerable<long> items, string company, string number,
+            string url) {
+            var shop = CacheEngine.GetShopStatus(User.Identity.GetUserId(), HttpContext);
+            var fulfillService = new FulfillmentService(shop.MyShopifyDomain, shop.ShopifyAccessToken);
+            var orderService = new OrderService(shop.MyShopifyDomain, shop.ShopifyAccessToken);
+            Fulfillment fulfillment;
+            //Get a reference to the user's orders, then find the requested order's id.    
+            var orderRef = _database.GetUserOrdersReference(User.Identity.GetUserId());
+            var shopifyId = await orderRef.Query().Where(o => o.Id == id).Select(o => o.ShopifyId).FirstAsync();
+            //Pull in the full Shopify order, which includes the Shopify customer.    
+            var fullOrder = await orderService.GetAsync(shopifyId);
+            if (fullOrder.FulfillmentStatus == "fulfilled") return RedirectToAction("Order", new {id});
+            //Get a list of all of the line items that are going to be fulfilled but aren't part of an    
+            //already pending fulfillment    
+            var toFulfill = fullOrder.LineItems
+                .Where(li => items.Contains(li.Id.Value))
+                .Where(li => fullOrder.Fulfillments.Where(f => f.Status == "pending")
+                                 .Any(f => f.LineItems.Any(fLineItem => fLineItem.Id == li.Id)) == false);
+            //Create a new fulfillment that will fulfill the remaining line items    
+            var trackingNumber = Guid.NewGuid().ToString();
+            fulfillment = new Fulfillment {
+                TrackingCompany = company ?? "AuntieDot Shipping, LLC.",
+                TrackingNumber = number ?? trackingNumber,
+                TrackingUrl = url ?? "https://shipping-company.com/track/" + trackingNumber,
+                OrderId = fullOrder.Id.Value,
+                LineItems = toFulfill
+            };
+            //Send the fulfillment to Shopify    
+            var notifyCustomer = true;
+            fulfillment = await fulfillService.CreateAsync(shopifyId, fulfillment, notifyCustomer);
+
+            if (fulfillment.Status != "pending" && fulfillment.Status != "success")
+                throw new Exception("Failed to fulfill line items.");
+
+            return RedirectToAction("Order", new {id});
+        }
+
         public async Task<ActionResult> Order(int id) {
             //Get a reference to the user's orders, then find the requested order's ShopifyId.    
             var orderRef = _database.GetUserOrdersReference(User.Identity.GetUserId());
-            var shopifyId = await orderRef.Query().Where(o => o.Id == id).Select(o => o.ShopifyId ).FirstAsync();
+            var shopifyId = await orderRef.Query().Where(o => o.Id == id).Select(o => o.ShopifyId).FirstAsync();
             //Get their cached shop data so we can use their access tokens without making another    
             //query to the database.
             var shop = CacheEngine.GetShopStatus(User.Identity.GetUserId(), HttpContext);
@@ -75,21 +113,20 @@ namespace AuntieDot.Controllers {
             //Pass the database order id to the ViewBag    ViewBag.OrderId = id;
             return View(fullOrder);
         }
-        [HttpPost, ValidateAntiForgeryToken]
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<ActionResult> SetStatus(int id, string status = "closed") {
             var shop = CacheEngine.GetShopStatus(User.Identity.GetUserId(), HttpContext);
             var orderService = new OrderService(shop.MyShopifyDomain, shop.ShopifyAccessToken);
             //Get a reference to the user's orders, then find the requested order's id.    
             var orderRef = _database.GetUserOrdersReference(User.Identity.GetUserId());
-            var shopifyId = await orderRef.Query().Where(o => o.Id == id).Select(o => o.ShopifyId ).FirstAsync();
-            if (status.Equals("open", StringComparison.OrdinalIgnoreCase)) {
-                await orderService.OpenAsync(shopifyId);
-            }
-            else {
-                await orderService.CloseAsync(shopifyId);
-            }
-            return RedirectToAction("Order", new { id });
+            var shopifyId = await orderRef.Query().Where(o => o.Id == id).Select(o => o.ShopifyId).FirstAsync();
+            if (status.Equals("open", StringComparison.OrdinalIgnoreCase)) await orderService.OpenAsync(shopifyId);
+            else await orderService.CloseAsync(shopifyId);
+            return RedirectToAction("Order", new {id});
         }
+
         // GET: Dashboard
         public async Task<ActionResult> Index(int page = 1) {
             var pageSize = 50;
