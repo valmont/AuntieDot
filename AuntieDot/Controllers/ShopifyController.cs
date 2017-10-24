@@ -11,6 +11,8 @@ namespace AuntieDot.Controllers {
     public class ShopifyController : Controller {
         public async Task<ActionResult> Handshake(string shop) {
             //Store the shop URL in a cookie.
+            Response.Cookies.Remove(".App.Handshake.ShopUrl");
+
             Response.SetCookie(new HttpCookie(".App.Handshake.ShopUrl", shop) {
                 Expires = DateTime.Now.AddDays(30)
             });
