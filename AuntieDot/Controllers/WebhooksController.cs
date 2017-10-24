@@ -11,6 +11,7 @@ using ShopifySharp;
 using Order = ShopifySharp.Order;
 
 namespace AuntieDot.Controllers {
+
     public class WebhooksController : Controller {
         [HttpPost]
         public async Task<string> OrderUpdated(string userId) {
@@ -47,8 +48,7 @@ namespace AuntieDot.Controllers {
         }
 
 
-        [HttpPost]
-        [Route("webhooks/orders/create")]
+        //[HttpPost]
         public async Task<string> OrderCreated(string userId) {
             var isValidRequest = await AuthorizationService.IsAuthenticWebhook(
                 Request.Headers.ToKvps(),
