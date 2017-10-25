@@ -293,6 +293,10 @@
     <Compile Include="Migrations\201710120256527_Order Model.Designer.cs">
       <DependentUpon>201710120256527_Order Model.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201710250312493_email-widget.cs" />
+    <Compile Include="Migrations\201710250312493_email-widget.Designer.cs">
+      <DependentUpon>201710250312493_email-widget.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\AccountViewModels.cs" />
     <Compile Include="Models\CachedShopStatus.cs" />
@@ -303,6 +307,7 @@
     <Compile Include="Startup.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="apiurl.txt" />
     <Content Include="Content\bootstrap.css" />
     <Content Include="Content\bootstrap.min.css" />
     <Content Include="favicon.ico" />
@@ -315,6 +320,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <None Include="Scripts\jquery-1.10.2.intellisense.js" />
+    <Content Include="Scripts\email-widget.js" />
     <Content Include="Scripts\jquery-1.10.2.js" />
     <Content Include="Scripts\jquery-1.10.2.min.js" />
     <None Include="Scripts\jquery.validate-vsdoc.js" />
@@ -391,6 +397,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201710120256527_Order Model.resx">
       <DependentUpon>201710120256527_Order Model.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201710250312493_email-widget.resx">
+      <DependentUpon>201710250312493_email-widget.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>

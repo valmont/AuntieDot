@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Web;
 using System.Web.Mvc;
 using AuntieDot.Attributes;
 using AuntieDot.Models;
 using Microsoft.AspNet.Identity;
+using Microsoft.AspNet.Identity.Owin;
 using ShopifySharp;
 using ShopifySharp.Filters;
 using Order = ShopifySharp.Order;
@@ -19,6 +21,36 @@ namespace AuntieDot.Controllers {
         public DashboardController() {
             _database = new ApplicationDbContext();
         }
+
+
+        [HttpPost, ValidateAntiForgeryToken]
+        public async Task<ActionResult> SaveWidgetCustomization(string title, string blurb, string hexColor) {
+            //Grab the user model    
+            var owinContext = HttpContext.GetOwinContext();
+            var usermanager = owinContext.GetUserManager<ApplicationUserManager>();
+            var user = await usermanager.FindByNameAsync(User.Identity.Name);
+            //Save the widget properties    
+            user.WidgetTitle = title;
+            user.WidgetBlurb = blurb;
+            user.WidgetHexColor = hexColor;
+            //Check if we need to create a script tag    
+            if (user.ScriptTagId.HasValue == false)    {
+                var service = new ScriptTagService(user.MyShopifyDomain, user.ShopifyAccessToken);
+                var tag = new ScriptTag {
+                    Event = "Onload",
+                    Src = "https://auntiedot.apphb.com/scripts/email-widget.js"
+                };
+            tag = await service.CreateAsync(tag);
+                //Save the tag id to the user's model        
+                user.ScriptTagId = tag.Id;    
+            }
+            //Save changes    
+            var save = await usermanager.UpdateAsync(user);
+            if (!save.Succeeded) {
+                    // TODO: Log and handle this error.        
+                    throw new Exception("Failed to save widget settings. Reasons: " + string.Join(", " , save.Errors));    }
+                return RedirectToAction("Index");
+            }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -144,8 +176,11 @@ namespace AuntieDot.Controllers {
             //Page must be at least 1    
             page = page < 1 ? 1 : page;
             //Get the current page of orders    
-            var orders = await query.OrderByDescending(o => o.DateCreated).Skip((page - 1) * pageSize).Take(pageSize)
-                .ToListAsync();
+            var orders = await query.OrderByDescending(o => o.DateCreated).Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
+            var owinContext = HttpContext.GetOwinContext();
+            var usermanager = owinContext.GetUserManager<ApplicationUserManager>();
+            var user = await usermanager.FindByNameAsync(User.Identity.Name);
+            ViewBag.User = user;
             return View(orders);
         }
 

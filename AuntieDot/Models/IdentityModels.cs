@@ -14,6 +14,10 @@ namespace AuntieDot.Models {
         public long? ShopifyChargeId { get; set; }
         public DateTimeOffset? BillingOn { get; set; }
         public ICollection<Order> Orders { get; set; } = new List<Order>();
+        public string WidgetTitle { get; set; }
+        public string WidgetBlurb { get; set; }
+        public string WidgetHexColor { get; set; }
+        public long? ScriptTagId { get; set; }
 
         public async Task<ClaimsIdentity> GenerateUserIdentityAsync(UserManager<ApplicationUser> manager) {
             // Note the authenticationType must match the one defined in CookieAuthenticationOptions.AuthenticationType

@@ -91,6 +91,10 @@ namespace AuntieDot.Controllers {
             user.ShopifyChargeId = null;
             user.ShopifyAccessToken = null;
             user.MyShopifyDomain = null;
+            user.ScriptTagId = null;
+            user.WidgetBlurb = null;
+            user.WidgetHexColor = null;
+            user.WidgetTitle = null;
             //Save changes
             var update = await usermanager.UpdateAsync(user);
             if (!update.Succeeded) {
