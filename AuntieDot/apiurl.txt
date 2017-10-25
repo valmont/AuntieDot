@@ -1,0 +1,1 @@
+﻿https://vibeproductsinc.myshopify.com/admin/api/auth?api_key=45f9d06fe0da6819ef81f6d2b2f7e3ae

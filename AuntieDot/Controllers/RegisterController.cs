@@ -60,7 +60,9 @@ namespace AuntieDot.Controllers {
                 AuthorizationScope.ReadContent,
                 AuthorizationScope.WriteContent,
                 AuthorizationScope.ReadOrders,
-                AuthorizationScope.WriteOrders
+                AuthorizationScope.WriteOrders,
+                AuthorizationScope.ReadScriptTags,
+                AuthorizationScope.WriteScriptTags
             };
 
             //Prepare the redirect URL. This is case-sensitive and must match a 
