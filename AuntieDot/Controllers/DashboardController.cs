@@ -23,7 +23,8 @@ namespace AuntieDot.Controllers {
         }
 
 
-        [HttpPost, ValidateAntiForgeryToken]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<ActionResult> SaveWidgetCustomization(string title, string blurb, string hexColor) {
             //Grab the user model    
             var owinContext = HttpContext.GetOwinContext();
@@ -34,23 +35,22 @@ namespace AuntieDot.Controllers {
             user.WidgetBlurb = blurb;
             user.WidgetHexColor = hexColor;
             //Check if we need to create a script tag    
-            if (user.ScriptTagId.HasValue == false)    {
+            if (user.ScriptTagId.HasValue == false) {
                 var service = new ScriptTagService(user.MyShopifyDomain, user.ShopifyAccessToken);
                 var tag = new ScriptTag {
-                    Event = "Onload",
+                    Event = "onload",
                     Src = "https://auntiedot.apphb.com/scripts/email-widget.js"
                 };
-            tag = await service.CreateAsync(tag);
+                tag = await service.CreateAsync(tag);
                 //Save the tag id to the user's model        
-                user.ScriptTagId = tag.Id;    
+                user.ScriptTagId = tag.Id;
             }
             //Save changes    
             var save = await usermanager.UpdateAsync(user);
-            if (!save.Succeeded) {
-                    // TODO: Log and handle this error.        
-                    throw new Exception("Failed to save widget settings. Reasons: " + string.Join(", " , save.Errors));    }
-                return RedirectToAction("Index");
-            }
+            if (!save.Succeeded)
+                throw new Exception("Failed to save widget settings. Reasons: " + string.Join(", ", save.Errors));
+            return RedirectToAction("Index");
+        }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -59,7 +59,7 @@ namespace AuntieDot.Controllers {
             //Get a total count of open orders on the shop    
             var service = new OrderService(shop.MyShopifyDomain, shop.ShopifyAccessToken);
             var count = await service.CountAsync(new OrderFilter {
-                Status = "Open"
+                Status = "open"
             });
             var page = 0;
             var importedOrders = new List<Order>();
@@ -69,7 +69,7 @@ namespace AuntieDot.Controllers {
                 //These field names MUST match the Shopify API, NOT the ones in ShopifySharp.        
                 var filterOptions = new OrderFilter {
                     Limit = 250,
-                    Status = "Open",
+                    Status = "open",
                     Fields = "id,created_at,name,line_items,customer",
                     Page = page
                 };
@@ -176,7 +176,8 @@ namespace AuntieDot.Controllers {
             //Page must be at least 1    
             page = page < 1 ? 1 : page;
             //Get the current page of orders    
-            var orders = await query.OrderByDescending(o => o.DateCreated).Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
+            var orders = await query.OrderByDescending(o => o.DateCreated).Skip((page - 1) * pageSize).Take(pageSize)
+                .ToListAsync();
             var owinContext = HttpContext.GetOwinContext();
             var usermanager = owinContext.GetUserManager<ApplicationUserManager>();
             var user = await usermanager.FindByNameAsync(User.Identity.Name);
