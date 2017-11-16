@@ -1,0 +1,9 @@
+﻿@model dynamic
+
+@{ ViewBag.Title = "Redirecting"; }
+<h2>Redirecting, please wait...</h2>
+@section Scripts {
+    <script>
+        window.top.location.href = "@ViewBag.Url";
+    </script> 
+    }

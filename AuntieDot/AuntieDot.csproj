@@ -271,6 +271,7 @@
     <Compile Include="Controllers\AccountController.cs" />
     <Compile Include="Controllers\DashboardController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
+    <Compile Include="Controllers\IframeBreakerController.cs" />
     <Compile Include="Controllers\ManageController.cs" />
     <Compile Include="Controllers\RegisterController.cs" />
     <Compile Include="Controllers\ShopifyController.cs" />
@@ -372,6 +373,7 @@
     <Content Include="Views\Register\Index.cshtml" />
     <Content Include="Views\Register\Connect.cshtml" />
     <Content Include="Views\Dashboard\Order.cshtml" />
+    <Content Include="Views\IframeBreaker\Index.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

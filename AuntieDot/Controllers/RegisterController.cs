@@ -77,7 +77,8 @@ namespace AuntieDot.Controllers {
                 redirectUrl);
 
             //Build the authorization URL and send the user to it
-            return Redirect(authUrl.ToString());
+            //return Redirect(authUrl.ToString());
+            return RedirectToAction("Index", "IframeBreaker", new {url = authUrl.ToString()});
         }
 
         [Authorize]
@@ -102,7 +103,8 @@ namespace AuntieDot.Controllers {
             //Create the charge
             charge = await new RecurringChargeService(domain, token).CreateAsync(charge);
             //Redirect the user to accept the charge
-            return Redirect(charge.ConfirmationUrl);
+            //return Redirect(charge.ConfirmationUrl);
+            return RedirectToAction("Index", "IframeBreaker", new {url = charge.ConfirmationUrl});
         }
     }
 }
