@@ -1,0 +1,15 @@
+﻿@{
+    var shop = Request.QueryString.Get("shop");
+    //Turn off our Razor layout view.    
+    Layout = null;
+}
+@* Uncomment the layout line below to change the store's theme layout file to 'theme.bett er_theme.liquid'. *@
+@* {% layout 'theme.better_theme' %} *@
+
+@* Uncomment the layout line below to completely disable the store's theme. *@ 
+@* {% layout none %} *@
+<style>
+    .red { color: red; }
+</style>
+<h1 class="red">Welcome to {{shop.name}}'s proxy page!</h1>
+<h3>Found at @shop</h3>

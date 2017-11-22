@@ -273,6 +273,7 @@
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\IframeBreakerController.cs" />
     <Compile Include="Controllers\ManageController.cs" />
+    <Compile Include="Controllers\ProxyController.cs" />
     <Compile Include="Controllers\RegisterController.cs" />
     <Compile Include="Controllers\ShopifyController.cs" />
     <Compile Include="Controllers\WebhooksController.cs" />
@@ -377,6 +378,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
+    <Folder Include="Views\Proxy\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="fonts\glyphicons-halflings-regular.woff" />
